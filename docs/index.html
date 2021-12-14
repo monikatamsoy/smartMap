@@ -16,29 +16,42 @@
         
         <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
         <script  >
-            let scene, camera, controls, renderer, loader, city, mouse, raycaster, light1, light2, pin, pins, info, pinGroup,infoGroup, fullNameMesh, visible= true;
+            let scene, camera, controls, renderer, loader, city, mouse, raycaster, light1, light2, pin, pins,selected, info, pinGroup,infoGroup, fullNameMesh, visible= true;
             let model = {};
 
             let onMouseMove = (e) => {
                 mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
                 mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-                console.log(mouse)
+                // console.log(mouse)
                 raycaster.setFromCamera( mouse, camera );
 
                 var intersects = raycaster.intersectObjects( pinGroup.children );
-                if (intersects[0] && intersects[0].object.name=='pin')
+                if (intersects[0])
                 {
-                    console.log(intersects[0].object, "pin found");
-                    var x = intersects[0].object.position.x + 2;
-                    var y = intersects[0].object.position.y+ 2;
-                    var z = intersects[0].object.position.z;
-
-                    fullNameMesh.material.visible = true
+                     selected = infoGroup.children.find(info => {
+                    return info.name === "infoMesh"+intersects[0].object.id
+                    })
+                    selected.material.visible = true
                 } 
-                 else if(fullNameMesh) {
-                    fullNameMesh.material.visible = false
-            }
         }
+
+        let onMouseClick = (e) => {
+                mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+                mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+                // console.log(mouse)
+                raycaster.setFromCamera( mouse, camera );
+
+                var intersects = raycaster.intersectObjects( infoGroup.children );
+                if (intersects[0] )
+                {
+                     
+                    intersects[0].object.material.visible = false
+                } 
+                 
+            
+        }
+
+
 
             let init = () => {
             scene = new THREE.Scene();
@@ -59,11 +72,14 @@
             loader = new THREE.GLTFLoader( );
             loader.setPath('./assets/');
             loader.load('desertCity.glb',loadModel);
-            loader.load('pin.glb',loadModel)
-            loader.load('pin.glb',loadModel)
-            loader.load('pin.glb',loadModel)
-            loader.load('pin.glb',loadModel)
 
+            for ( let i = 0 ; i <= 5 ; i ++) {
+                loader.load('pin.glb',loadModel)
+                loader.load('hospital.glb',loadModel)
+
+            }
+            
+            
             pinGroup = new THREE.Group();
             infoGroup = new THREE.Group();
             
@@ -79,20 +95,23 @@
             controls.maxDistance = 100;
 
             document.addEventListener("mousemove", onMouseMove, false)
+            document.addEventListener("click", onMouseClick, false)
+
             document.body.appendChild(renderer.domElement);
             }
 
-            let getText = (text, x,y,z, id) => {
+            async function getText (text, x,y,z, id)  {
                 let fontLoader = new THREE.FontLoader();
                 fontLoader.load('https://threejs.org/examples/fonts/helvetiker_bold.typeface.json', function(font) {
                 //  Creates the name mesh
                 const material = materialSelector()
                 fullNameMesh = createTextMesh(text, font, 2, material);
                 //  Adds the name mesh and the slogan mesh to the scene
-                fullNameMesh.name = "infoMesh";
+                fullNameMesh.name = "infoMesh"+id;
                 fullNameMesh.position.set(x,y,z);
-                infoGroup.add(fullNameMesh)
                 fullNameMesh.material.visible = false
+                pin.add(fullNameMesh)
+                infoGroup.add(fullNameMesh)
                 // fullNameMesh.name = id;
                 // scene.add(infoGroup);
                 // scene.add(fullNameMesh);
@@ -128,26 +147,32 @@
                 }
             
 
-            let loadModel = (gltf) => {
+            async function  loadModel (gltf) {
                 let ranNumX = Math.ceil(Math.random() * 100) * (Math.round(Math.random()) ? 1 : -1)
                 let ranNumZ = Math.ceil(Math.random() * 100) * (Math.round(Math.random()) ? 1 : -1)
-                if(gltf.scene.children[0].name == 'desert_city') {
-                    gltf.scene.position.set(0,-10,0)
-                    // gltf.scene.scale.set(0.3,0.3,0.3)
-                    console.log(gltf)
-                    
-                } else {
-                    pin = gltf.scene.children[4];
+                if (gltf.scene.children[0].name == 'pin'){
+                    pin = gltf.scene.children[0];
                     pins = gltf.scene;
                     // pin.scale.set(1, 1, 1.5)
                     // gltf.scene.position.set(Math.floor(Math.random() * -50) + -50, 5, Math.floor(Math.random() * -50) + -50);
                     pin.position.set(ranNumX, 5, ranNumZ);
-                    getText("gas station", ranNumX+3, 5, ranNumZ, pin.userData.id)
                     
                     pinGroup.add( pin );
                     
                     console.log(pin, info);
-
+                    await getText("gas station", ranNumX+3, 5, ranNumZ, pin.id)
+ 
+                } else if (gltf.scene.children[0].name == 'HospitalPIn'){
+                    pin = gltf.scene.children[0];
+                    pin = gltf.scene;
+                    // pin.scale.set(1, 1, 1.5)
+                    // gltf.scene.position.set(Math.floor(Math.random() * -50) + -50, 5, Math.floor(Math.random() * -50) + -50);
+                    pin.position.set(ranNumX, 10, ranNumZ);
+                    
+                    pinGroup.add( pin );
+                    
+                    console.log(pin, info);
+                    await getText("hopsital", ranNumX+3, 5, ranNumZ, pin.id)
                 }
                 scene.add(gltf.scene)
                 scene.add(pinGroup)
