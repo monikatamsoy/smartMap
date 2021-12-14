@@ -52,6 +52,7 @@
             
         }
 
+        
 
 
             let init = () => {
@@ -84,7 +85,19 @@
             pinGroup = new THREE.Group();
             infoGroup = new THREE.Group();
             
-            
+            var path = "assets/";
+            var format = ".jpg";
+            var urls = [
+                path + "px" + format,
+                path + "nx" + format,
+                path + "py" + format,
+                path + "ny" + format,
+                path + "pz" + format,
+                path + "nz" + format,
+            ];
+            var reflectionCube = new THREE.CubeTextureLoader().load(urls);
+            reflectionCube.format = THREE.RGBFormat;
+            scene.background = reflectionCube;
 
             renderer = new THREE.WebGLRenderer({antialias:true});
             renderer.setSize(window.innerWidth,window.innerHeight);
@@ -151,32 +164,32 @@
             async function  loadModel (gltf) {
                 let ranNumX = Math.ceil(Math.random() * 100) * (Math.round(Math.random()) ? 1 : -1)
                 let ranNumZ = Math.ceil(Math.random() * 100) * (Math.round(Math.random()) ? 1 : -1)
-                if(gltf.scene.children[0].name == 'desert_city') {
-                    gltf.scene.position.set(0,-5,20)
-                }
+                
                 if (gltf.scene.children[0].name == 'pin'){
                     pin = gltf.scene.children[0];
                     // pins = gltf.scene;
                     // pin.scale.set(1, 1, 1.5)
                     // gltf.scene.position.set(Math.floor(Math.random() * -50) + -50, 5, Math.floor(Math.random() * -50) + -50);
-                    pin.position.set(ranNumX, 5, ranNumZ);
+                    pin.position.set(ranNumX, 0, ranNumZ);
                     
                     pinGroup.add( pin );
                     
                     console.log(pin, info);
-                    await getText("gas station", ranNumX+3, 6, ranNumZ, pin.id)
+                    await getText("gas station", ranNumX+3, 0, ranNumZ, pin.id)
  
                 } else if (gltf.scene.children[0].name == 'hospital'){
                     pin = gltf.scene.children[0];
                     // pin = gltf.scene;
                     // pin.scale.set(1, 1, 1.5)
                     // gltf.scene.position.set(Math.floor(Math.random() * -50) + -50, 5, Math.floor(Math.random() * -50) + -50);
-                    pin.position.set(ranNumX, 10, ranNumZ);
+                    pin.position.set(ranNumX, 0, ranNumZ);
                     
                     pinGroup.add( pin );
                     
                     console.log(pin, info);
-                    await getText("hospital", ranNumX+3, 6, ranNumZ, pin.id)
+                    await getText("hospital", ranNumX+3, 0, ranNumZ, pin.id)
+                } else {
+                    gltf.scene.position.set(0,-15,20)
                 }
                 scene.add(gltf.scene)
                 scene.add(pinGroup)
