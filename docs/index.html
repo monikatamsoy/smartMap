@@ -115,17 +115,22 @@
             }
 
             async function getText (text, x,y,z, id)  {
+                
                 let fontLoader = new THREE.FontLoader();
                 fontLoader.load('https://threejs.org/examples/fonts/helvetiker_bold.typeface.json', function(font) {
                 //  Creates the name mesh
                 const material = materialSelector()
                 fullNameMesh = createTextMesh(text, font, 2, material);
                 //  Adds the name mesh and the slogan mesh to the scene
+                
                 fullNameMesh.name = "infoMesh"+id;
                 fullNameMesh.position.set(x,y,z);
+                
                 fullNameMesh.material.visible = false
+                fullNameMesh.geometry.attributes.position.needsUpdate = true;
                 pin.add(fullNameMesh)
                 infoGroup.add(fullNameMesh)
+
                 // fullNameMesh.name = id;
                 // scene.add(infoGroup);
                 // scene.add(fullNameMesh);
@@ -200,7 +205,14 @@
                 if(pin !== undefined) {
                     pinGroup.children.forEach( pin => pin.rotation.y += 0.01)
                 }
-                
+                if(fullNameMesh) {
+                    // // console.log("fullNameMesh",fullNameMesh.rotation)
+                    // fullNameMesh.lookAt(camera.position);
+                    // fullNameMesh.rotation.y = camera.rotation.y
+                    infoGroup.children.forEach(text => text.lookAt(camera.position))
+                    
+                }
+                light.lookAt(camera.position)
                 controls.update();
                 renderer.render(scene, camera);
                 requestAnimationFrame(render)
