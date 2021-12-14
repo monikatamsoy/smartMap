@@ -7,7 +7,7 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" integrity="sha512-dLxUelApnYxpLt6K2iomGngnHO83iUvZytA3YjDUCjT0HDOHKXnVYdf3hU4JjM8uEhxf9nD1/ey98U3t2vZ0qQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     </head>
     <body>
-
+        <div id="city"></div>
 
         <script src="js/OrbitControls.js"></script>
         <script type = "module" >
@@ -15,13 +15,157 @@
         </script>
         
         <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-        <script type="module">
-            import { App } from './app.js';
+        <script  >
+            let scene, camera, controls, renderer, loader, city, mouse, raycaster, light1, light2, pin, pins, info, pinGroup,infoGroup, fullNameMesh, visible= true;
+            let model = {};
 
-            document.addEventListener("DOMContentLoaded", function(){
-                const app = new App();
-                window.app = app;
+            let onMouseMove = (e) => {
+                mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+                mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+                console.log(mouse)
+                raycaster.setFromCamera( mouse, camera );
+
+                var intersects = raycaster.intersectObjects( pinGroup.children );
+                if (intersects[0] && intersects[0].object.name=='pin')
+                {
+                    console.log(intersects[0].object, "pin found");
+                    var x = intersects[0].object.position.x + 2;
+                    var y = intersects[0].object.position.y+ 2;
+                    var z = intersects[0].object.position.z;
+
+                    fullNameMesh.material.visible = true
+                } 
+                 else if(fullNameMesh) {
+                    fullNameMesh.material.visible = false
+            }
+        }
+
+            let init = () => {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xffffff);
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 1,1000);
+            camera.position.set(0,10,40);
+            scene.add( new THREE.HemisphereLight( 0x606060, 0x404040 ) );
+
+            light = new THREE.DirectionalLight( 0xffffff );
+            light.position.set( 1, 1, 1 ).normalize();
+		    scene.add( light );
+
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+            mouse.x = mouse.y = -1;
+
+            
+            loader = new THREE.GLTFLoader( );
+            loader.setPath('./assets/');
+            loader.load('desertCity.glb',loadModel);
+            loader.load('pin.glb',loadModel)
+            loader.load('pin.glb',loadModel)
+            loader.load('pin.glb',loadModel)
+            loader.load('pin.glb',loadModel)
+
+            pinGroup = new THREE.Group();
+            
+            
+            
+
+            renderer = new THREE.WebGLRenderer({antialias:true});
+            renderer.setSize(window.innerWidth,window.innerHeight);
+
+            controls = new THREE.OrbitControls (camera, renderer.domElement);
+            controls.minPolarAngle = 0;
+		    controls.maxPolarAngle =  Math.PI * 0.5;
+            // controls.minDistance = 5;
+            controls.maxDistance = 100;
+
+            document.addEventListener("mousemove", onMouseMove, false)
+            document.body.appendChild(renderer.domElement);
+            }
+
+            let getText = (text, x,y,z) => {
+                let fontLoader = new THREE.FontLoader();
+                fontLoader.load('https://threejs.org/examples/fonts/helvetiker_bold.typeface.json', function(font) {
+                //  Creates the name mesh
+                fullNameMesh = createTextMesh(text, font, 2, materialSelector());
+                //  Adds the name mesh and the slogan mesh to the scene
+                fullNameMesh.name = "infoMesh";
+                fullNameMesh.position.set(x,y,z);
+                // infoGroup.add(fullNameMesh)
+                fullNameMesh.material.visible = false
+                // scene.add(infoGroup);
+                scene.add(fullNameMesh)
+                return fullNameMesh;
+                
             });
+                }
+
+            function createTextMesh(text, font, size, mat) {
+                var geo = new THREE.TextGeometry(text, {
+                        font: font,
+                        size: size,
+                        height: 0.5,
+                        curveSegments: 5,
+                        // bevelEnabled: true,
+                        material: 0,
+                        extrudeMaterial: 1
+                    });
+                    geo.castShadow = true
+
+
+                    return new THREE.Mesh(geo, mat);
+                }   
+            function materialSelector() {
+                
+                        return new THREE.MeshPhongMaterial({
+                            color: 0x9e0031,
+                            specular: 0x555555,
+                            shininess: 30
+                        });
+                        
+                }
+            
+
+            let loadModel = (gltf) => {
+                let infoGroup = new THREE.Object3D();
+                let ranNumX = Math.ceil(Math.random() * 100) * (Math.round(Math.random()) ? 1 : -1)
+                let ranNumZ = Math.ceil(Math.random() * 100) * (Math.round(Math.random()) ? 1 : -1)
+                if(gltf.scene.children[0].name == 'desert_city') {
+                    gltf.scene.position.set(0,-10,0)
+                    // gltf.scene.scale.set(0.3,0.3,0.3)
+                    console.log(gltf)
+                    
+                } else {
+                    pin = gltf.scene.children[4];
+                    pins = gltf.scene;
+                    // pin.scale.set(1, 1, 1.5)
+                    // gltf.scene.position.set(Math.floor(Math.random() * -50) + -50, 5, Math.floor(Math.random() * -50) + -50);
+                    pin.position.set(ranNumX, 5, ranNumZ);
+                    info = getText("gas station", ranNumX+3, 5, ranNumZ)
+
+                    pinGroup.add( pin );
+                    console.log("pin:",pin);
+                    // infoGroup.add(pin)
+                    // infoGroup.add(info);
+                    console.log(infoGroup)
+                    console.log(gltf.scene.position, pin, pins, pinGroup);
+                    // scene.add(pin)
+                }
+                scene.add(gltf.scene)
+                scene.add(pinGroup)
+                // console.log(gltf)
+            }
+
+            let render = () => {
+                if(pin !== undefined) {
+                    pinGroup.children.forEach( pin => pin.rotation.y += 0.01)
+                }
+                
+                controls.update();
+                renderer.render(scene, camera);
+                requestAnimationFrame(render)
+            }
+            init();
+            render();
         </script>
         
     </body>
