@@ -26,7 +26,8 @@
                 raycaster.setFromCamera( mouse, camera );
 
                 var intersects = raycaster.intersectObjects( pinGroup.children );
-                if (intersects[0])
+                // var intersectsHospital = raycaster.intersectObjects( pinGroup.children );
+                if (intersects[0] )
                 {
                      selected = infoGroup.children.find(info => {
                     return info.name === "infoMesh"+intersects[0].object.id
@@ -150,9 +151,12 @@
             async function  loadModel (gltf) {
                 let ranNumX = Math.ceil(Math.random() * 100) * (Math.round(Math.random()) ? 1 : -1)
                 let ranNumZ = Math.ceil(Math.random() * 100) * (Math.round(Math.random()) ? 1 : -1)
+                if(gltf.scene.children[0].name == 'desert_city') {
+                    gltf.scene.position.set(0,-5,20)
+                }
                 if (gltf.scene.children[0].name == 'pin'){
                     pin = gltf.scene.children[0];
-                    pins = gltf.scene;
+                    // pins = gltf.scene;
                     // pin.scale.set(1, 1, 1.5)
                     // gltf.scene.position.set(Math.floor(Math.random() * -50) + -50, 5, Math.floor(Math.random() * -50) + -50);
                     pin.position.set(ranNumX, 5, ranNumZ);
@@ -160,11 +164,11 @@
                     pinGroup.add( pin );
                     
                     console.log(pin, info);
-                    await getText("gas station", ranNumX+3, 5, ranNumZ, pin.id)
+                    await getText("gas station", ranNumX+3, 6, ranNumZ, pin.id)
  
-                } else if (gltf.scene.children[0].name == 'HospitalPIn'){
+                } else if (gltf.scene.children[0].name == 'hospital'){
                     pin = gltf.scene.children[0];
-                    pin = gltf.scene;
+                    // pin = gltf.scene;
                     // pin.scale.set(1, 1, 1.5)
                     // gltf.scene.position.set(Math.floor(Math.random() * -50) + -50, 5, Math.floor(Math.random() * -50) + -50);
                     pin.position.set(ranNumX, 10, ranNumZ);
@@ -172,7 +176,7 @@
                     pinGroup.add( pin );
                     
                     console.log(pin, info);
-                    await getText("hopsital", ranNumX+3, 5, ranNumZ, pin.id)
+                    await getText("hospital", ranNumX+3, 6, ranNumZ, pin.id)
                 }
                 scene.add(gltf.scene)
                 scene.add(pinGroup)
