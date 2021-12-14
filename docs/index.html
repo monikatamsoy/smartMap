@@ -65,7 +65,7 @@
             loader.load('pin.glb',loadModel)
 
             pinGroup = new THREE.Group();
-            
+            infoGroup = new THREE.Group();
             
             
 
@@ -82,19 +82,22 @@
             document.body.appendChild(renderer.domElement);
             }
 
-            let getText = (text, x,y,z) => {
+            let getText = (text, x,y,z, id) => {
                 let fontLoader = new THREE.FontLoader();
                 fontLoader.load('https://threejs.org/examples/fonts/helvetiker_bold.typeface.json', function(font) {
                 //  Creates the name mesh
-                fullNameMesh = createTextMesh(text, font, 2, materialSelector());
+                const material = materialSelector()
+                fullNameMesh = createTextMesh(text, font, 2, material);
                 //  Adds the name mesh and the slogan mesh to the scene
                 fullNameMesh.name = "infoMesh";
                 fullNameMesh.position.set(x,y,z);
-                // infoGroup.add(fullNameMesh)
+                infoGroup.add(fullNameMesh)
                 fullNameMesh.material.visible = false
+                // fullNameMesh.name = id;
                 // scene.add(infoGroup);
-                scene.add(fullNameMesh)
-                return fullNameMesh;
+                // scene.add(fullNameMesh);
+                scene.add(infoGroup)
+                
                 
             });
                 }
@@ -126,7 +129,6 @@
             
 
             let loadModel = (gltf) => {
-                let infoGroup = new THREE.Object3D();
                 let ranNumX = Math.ceil(Math.random() * 100) * (Math.round(Math.random()) ? 1 : -1)
                 let ranNumZ = Math.ceil(Math.random() * 100) * (Math.round(Math.random()) ? 1 : -1)
                 if(gltf.scene.children[0].name == 'desert_city') {
@@ -140,19 +142,16 @@
                     // pin.scale.set(1, 1, 1.5)
                     // gltf.scene.position.set(Math.floor(Math.random() * -50) + -50, 5, Math.floor(Math.random() * -50) + -50);
                     pin.position.set(ranNumX, 5, ranNumZ);
-                    info = getText("gas station", ranNumX+3, 5, ranNumZ)
-
+                    getText("gas station", ranNumX+3, 5, ranNumZ, pin.userData.id)
+                    
                     pinGroup.add( pin );
-                    console.log("pin:",pin);
-                    // infoGroup.add(pin)
-                    // infoGroup.add(info);
-                    console.log(infoGroup)
-                    console.log(gltf.scene.position, pin, pins, pinGroup);
-                    // scene.add(pin)
+                    
+                    console.log(pin, info);
+
                 }
                 scene.add(gltf.scene)
                 scene.add(pinGroup)
-                // console.log(gltf)
+                
             }
 
             let render = () => {
